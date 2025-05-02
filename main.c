@@ -32,15 +32,15 @@ void clear_memory() {
     free(map);
 }
 
-void load_map() {
-    FILE* f = fopen("map.txt", "r");
+int load_map(const char* filename) {
+    FILE* f = fopen(filename, "r");
     if (!f) {
-        printf("Error: 1 - 'map.txt' not found\n");
-        exit(1);
+        printf("Error: 1 - '%s' not found\n", filename);
+        return 0; // Retorna 0 em caso de erro
     }
 
     fscanf(f, "%d %d\n", &lines, &columns);
-    lock_map();
+    lock_map(); // Chama a função para alocar o mapa
 
     for (int i = 0; i < lines; i++) {
         for (int j = 0; j < columns; j++) {
@@ -65,14 +65,17 @@ void load_map() {
     }
 
     fclose(f);
+    return 1; // Retorna 1 em caso de sucesso
 }
+
+// int load_map(const char* filename) { ... }
 
 void show_map() {
     for (int i = 0; i < lines; i++) {
         for (int j = 0; j < columns; j++) {
             printf("%s", map[i][j].content);         
-    }
-      printf("\n");
+        }
+        printf("\n");
     }
 }
 
@@ -85,7 +88,7 @@ void move_player(char* direction) {
 
     for (int i = 0; i < lines && x == -1; i++) {
         for (int j = 0; j < columns; j++) {
-            if (strcmp(map[i][j].content, "@") == 0) {
+            if (strcmp(map[i][j].content, "󰙍") == 0) {
                 x = i;
                 y = j;
                 break;
@@ -115,13 +118,13 @@ void move_player(char* direction) {
 
     if (strcmp(map[new_x][new_y].content, ".") == 0) {
         strcpy(map[x][y].content, ".");
-        strcpy(map[new_x][new_y].content, "@");
+        strcpy(map[new_x][new_y].content, "󰙍");
     }
     else if (strcmp(map[new_x][new_y].content, "#") == 0) {
         if (beyond_x >= 0 && beyond_x < lines && beyond_y >= 0 && beyond_y < columns) {
             if (strcmp(map[beyond_x][beyond_y].content, ".") == 0) {
                 strcpy(map[beyond_x][beyond_y].content, "#");
-                strcpy(map[new_x][new_y].content, "@");
+                strcpy(map[new_x][new_y].content, "󰙍");
                 strcpy(map[x][y].content, ".");
             }
         }
@@ -148,7 +151,9 @@ void capture_input(char* direction) {
 }
 
 int main() {
-    load_map();
+    if (!load_map("map.txt")) {
+        return 1; 
+    }
 
     char direction[10];
     do {
@@ -162,4 +167,3 @@ int main() {
     clear_memory();
     return 0;
 }
-
